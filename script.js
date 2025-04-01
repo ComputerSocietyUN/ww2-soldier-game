@@ -34,6 +34,9 @@ const breathingInstructions = {
     exhale: "Exhala lentamente..."
 };
 
+// Número de WhatsApp actualizado
+const whatsappNumber = "573008811367";
+
 document.addEventListener('DOMContentLoaded', () => {
     const optionButtons = document.querySelectorAll('.option-btn');
     const adviceBox = document.getElementById('advice-box');
@@ -71,6 +74,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function showAdvice(emotion) {
         dialogueTextElement.textContent = dialogueText[emotion];
         adviceText.innerHTML = adviceContent[emotion].map(advice => `<p>${advice}</p>`).join('');
+        
+        // Añadir el botón de WhatsApp
+        const whatsappLink = document.createElement('div');
+        whatsappLink.className = 'whatsapp-container';
+        whatsappLink.innerHTML = `
+            <a href="https://wa.me/${whatsappNumber}?text=Hola,%20estoy%20sintiendo%20${emotion}%20y%20necesito%20ayuda" 
+               class="whatsapp-btn" target="_blank">
+                Hablar con un consejero
+            </a>
+        `;
+        adviceText.appendChild(whatsappLink);
+        
         adviceBox.style.display = 'block';
         breathingExercise.style.display = 'block';
         document.querySelector('.options-container').style.display = 'none';
@@ -87,12 +102,23 @@ document.addEventListener('DOMContentLoaded', () => {
         isBreathing = true;
         startBreathingButton.textContent = 'Detener';
         let phase = 0;
+        
+        // Actualizar visual de respiración inmediatamente
+        breathingCircle.classList.add('expand');
+        breathingInstruction.textContent = breathingInstructions.inhale;
+        
+        // Actualizar el porcentaje de llenado
+        updateBreathingFill(0);
 
         breathingInterval = setInterval(() => {
             switch(phase) {
                 case 0: // Inhale
                     breathingCircle.classList.add('expand');
                     breathingInstruction.textContent = breathingInstructions.inhale;
+                    
+                    // Animación de llenado
+                    animateBreathingFill(0, 100, 4000);
+                    
                     phase = 1;
                     break;
                 case 1: // Hold
@@ -102,6 +128,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 2: // Exhale
                     breathingCircle.classList.remove('expand');
                     breathingInstruction.textContent = breathingInstructions.exhale;
+                    
+                    // Animación de vaciado
+                    animateBreathingFill(100, 0, 4000);
+                    
                     phase = 0;
                     break;
             }
@@ -114,5 +144,31 @@ document.addEventListener('DOMContentLoaded', () => {
         breathingCircle.classList.remove('expand');
         breathingInstruction.textContent = 'Inhala... Exhala...';
         startBreathingButton.textContent = 'Iniciar Ejercicio';
+        updateBreathingFill(0);
     }
-}); 
+    
+    function updateBreathingFill(percentage) {
+        breathingCircle.style.background = `conic-gradient(
+            var(--button-color) ${percentage}%, 
+            rgba(46, 204, 113, 0.3) ${percentage}%
+        )`;
+    }
+    
+    function animateBreathingFill(start, end, duration) {
+        const startTime = performance.now();
+        
+        function animate(currentTime) {
+            const elapsedTime = currentTime - startTime;
+            const progress = Math.min(elapsedTime / duration, 1);
+            const currentPercentage = start + (end - start) * progress;
+            
+            updateBreathingFill(currentPercentage);
+            
+            if (progress < 1 && isBreathing) {
+                requestAnimationFrame(animate);
+            }
+        }
+        
+        requestAnimationFrame(animate);
+    }
+});

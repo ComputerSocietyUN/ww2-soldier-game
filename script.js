@@ -28,12 +28,25 @@ const dialogueText = {
     estres: "El estrés es parte de la vida militar. Tienes herramientas para manejarlo."
 };
 
+const breathingInstructions = {
+    inhale: "Inhala profundamente...",
+    hold: "Mantén la respiración...",
+    exhale: "Exhala lentamente..."
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     const optionButtons = document.querySelectorAll('.option-btn');
     const adviceBox = document.getElementById('advice-box');
     const adviceText = document.getElementById('advice-text');
     const dialogueTextElement = document.getElementById('dialogue-text');
     const backButton = document.getElementById('back-btn');
+    const breathingExercise = document.getElementById('breathing-exercise');
+    const breathingCircle = document.querySelector('.breathing-circle');
+    const breathingInstruction = document.getElementById('breathing-instruction');
+    const startBreathingButton = document.getElementById('start-breathing');
+
+    let breathingInterval;
+    let isBreathing = false;
 
     optionButtons.forEach(button => {
         button.addEventListener('click', () => {
@@ -44,18 +57,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
     backButton.addEventListener('click', () => {
         hideAdvice();
+        stopBreathing();
+    });
+
+    startBreathingButton.addEventListener('click', () => {
+        if (isBreathing) {
+            stopBreathing();
+        } else {
+            startBreathing();
+        }
     });
 
     function showAdvice(emotion) {
         dialogueTextElement.textContent = dialogueText[emotion];
         adviceText.innerHTML = adviceContent[emotion].map(advice => `<p>${advice}</p>`).join('');
         adviceBox.style.display = 'block';
+        breathingExercise.style.display = 'block';
         document.querySelector('.options-container').style.display = 'none';
     }
 
     function hideAdvice() {
         adviceBox.style.display = 'none';
+        breathingExercise.style.display = 'none';
         document.querySelector('.options-container').style.display = 'flex';
         dialogueTextElement.textContent = '¿Cómo te sientes hoy, soldado?';
+    }
+
+    function startBreathing() {
+        isBreathing = true;
+        startBreathingButton.textContent = 'Detener';
+        let phase = 0;
+
+        breathingInterval = setInterval(() => {
+            switch(phase) {
+                case 0: // Inhale
+                    breathingCircle.classList.add('expand');
+                    breathingInstruction.textContent = breathingInstructions.inhale;
+                    phase = 1;
+                    break;
+                case 1: // Hold
+                    breathingInstruction.textContent = breathingInstructions.hold;
+                    phase = 2;
+                    break;
+                case 2: // Exhale
+                    breathingCircle.classList.remove('expand');
+                    breathingInstruction.textContent = breathingInstructions.exhale;
+                    phase = 0;
+                    break;
+            }
+        }, 4000);
+    }
+
+    function stopBreathing() {
+        isBreathing = false;
+        clearInterval(breathingInterval);
+        breathingCircle.classList.remove('expand');
+        breathingInstruction.textContent = 'Inhala... Exhala...';
+        startBreathingButton.textContent = 'Iniciar Ejercicio';
     }
 }); 
